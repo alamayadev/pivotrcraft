@@ -46,6 +46,7 @@ mod halftone;
 pub mod help;
 pub mod importmatches;
 mod info;
+pub mod infographic;
 pub(crate) mod inline;
 mod interactivity;
 mod intertwine;
@@ -347,6 +348,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
         v.extend(threads::specs());
         v.extend(textwrap::specs());
         v.extend(graph::specs());
+        v.extend(infographic::specs());
         v.extend(rasterfx::specs());
         v.extend(views::specs());
         v.extend(maskedit::specs());
