@@ -7,19 +7,22 @@
 ## Progress Snapshot (2026-11-26)
 
 - **Branch/remotes:** `pivot`; `origin=https://github.com/alamayadev/pivotrcraft.git`, `upstream=https://github.com/storytold/vectorcraft.git`.
-- **Implemented (engine/MVP foundation):** `infographic.inspectCsv`, `infographic.listChartPresets`, `infographic.listCharts`, `infographic.createChart`, `infographic.addChartFromCsv`, `infographic.updateChart` under `crates/engine/src/cmd/infographic/*`, registered in `crates/engine/src/cmd.rs`.
-- **Metadata:** versioned additive `Document.unknown["infographic"]` (`schemaVersion: 1`) with chart/source/mapping/preset/axis/highlight/node IDs/overlay/generated IDs; `listCharts` reports stale references.
-- **Presets:** `bar-building` uses a programmatic sliding column `GraphDesign` (`Infographic Building`) applied via `graph.column` (`sliding`, `chop`); `bar-arrow-highlight` generates deterministic arrow overlay (`none|last|max|min|index`, max/min first-category tie-break) and `updateChart` cleans stale overlays before regen.
-- **Validation:** validate-then-mutate for chart create/add/update; invalid mapping/index/asset reference paths return errors without partial chart metadata mutation beyond command boundary.
-- **Provenance:** added `ASSETS.md` row for programmatic `Infographic Building` preset art.
-- **Verification:** `cargo fmt`; `cargo check -p vectorcraft-engine` clean; `cargo test -p vectorcraft-engine --test infographic` **4 passed**.
+- **Implemented (engine):**
+  - Phase 1–2: `infographic.inspectCsv`, `infographic.listChartPresets`, `infographic.listCharts`, `infographic.createChart`, `infographic.addChartFromCsv`, `infographic.updateChart`, `infographic.removeChart` under [`crates/engine/src/cmd/infographic/*`](file:///e:/Github/pivotrcraft/crates/engine/src/cmd/infographic/mod.rs), registered in `crates/engine/src/cmd.rs`. `csvPath` reads enforce `AutomationRoots` and size limits via `fileio::read_file_head`. Presets include `bar-building`, `bar-arrow-highlight`, `bar-isometric-blue`, `bar-stepped-ribbon`, `bar-decline-green-blue`, and `bar-isometric-orange` (inspired by `docs/vector/*.svg`).
+  - Phase 3: `infographic.listDecorations`, `infographic.placeDecoration` with 6 embedded clean-room decorative SVG assets under `assets/infographic/decorations/*.svg` plus 39 embedded vector objects from `docs/vector/bahan*_svg/*.svg` (45+ total, WASM-safe via `include_str!`), safe `tint` recolor for compatible monochrome icons, and full `ASSETS.md` attribution (471/471 assets verified).
+  - Phase 4: `infographic.listTemplates`, `infographic.createFromCsv` with 3 built-in templates (`bar-report-basic`, `kpi-highlight-card`, `presentation-wide`) reusing `text.create`, chart presets, and decorations.
+  - Phase 6: `infographic.export` delegating to `document.export` (PNG/SVG/SVGZ/PDF/JPG/WebP) with `AutomationRoots` enforcement.
+- **Implemented (UI & MCP docs):**
+  - Phase 5: Right-side `Infographic` panel (`crates/ui-egui/src/panels/infographic.rs`) with `Charts`, `Objects` (filterable), and `Text` shortcut tabs (reusing existing `character`, `paragraph`, `charStyles`, `paraStyles` panels), registered in `panels.rs`, `state.rs`, and `menus/tree.rs`. `Add Chart` auto-creates a document when none is open, staggers placement, selects the new chart, and displays errors in red.
+  - `docs/mcp.md` updated with all `infographic.*` commands.
+- **Metadata:** versioned additive `Document.unknown["infographic"]` (`schemaVersion: 1`) with chart/source/mapping/preset/axis/highlight/node IDs/overlay/generated IDs; `updateChart` persists and cleans up `overlayNodeIds` deterministically; `removeChart` cleans up nodes and metadata.
+- **Verification:** `cargo fmt`; `cargo test -p vectorcraft-engine --test infographic` **7 passed**; `cargo check -p vectorcraft-ui-egui` **clean**; `cargo xtask assets` **pass (471/471)**; `cargo xtask layers` **pass (30 crates)**; `cargo xtask brands` **pass**.
 
 ## Remaining Gaps
 
-- **UI/MCP/docs:** no Infographic panel/menu wiring, no `docs/mcp.md` updates yet.
-- **Chart preset depth:** `bar-building` has one default palette variant and simple programmatic art; no bundled SVG asset pack yet. Arrow overlay placement is heuristic (primary-series bar bounds bucketing) and needs visual/fixture validation.
-- **Phase 1 extras:** `infographic.mapData`/preview command not separated; aggregation/missing policies implemented in chart flow but need broader tests/CLI docs.
-- **Phase 3+:** decorative SVG library, templates/composition, exports/batch, robustness fuzzing, upstream sync rehearsal not started.
+- **Chart preset depth:** `bar-building` has one default palette variant and programmatic art; `bar-arrow-highlight` targets primary-series bars and needs visual/pixel-fixture validation.
+- **UI polish & accessibility:** File menu shortcut (`New Infographic from CSV…`) and full `egui_kittest` accessibility/keyboard smoke tests for the new Infographic panel.
+- **Phase 6 hardening:** batch generation (`dataset` variants), performance benchmarks, hostile-input fuzzing, `cargo xtask wasm` check, and upstream sync rehearsal.
 
 ## 1. Executive Summary
 
@@ -57,12 +60,13 @@ The repurpose should be implemented as an **additive product layer** over these 
 
 ## 4. Upstream Sync Strategy
 
-Current repo state: `origin=https://github.com/storytold/vectorcraft.git`, branch `main`. Before implementation, fork and add remotes:
+Current repo state: branch `pivot`, `origin=https://github.com/alamayadev/pivotrcraft.git`, `upstream=https://github.com/storytold/vectorcraft.git`.
 
 ```powershell
-git remote rename origin upstream
-git remote add origin <fork-url>
-git checkout -b product/infographic
+# Regular sync from upstream into pivot
+git fetch upstream
+git checkout pivot
+git merge upstream/main
 ```
 
 ### Sync Rules
@@ -74,6 +78,7 @@ git checkout -b product/infographic
 5. **Conflict hotspot awareness:** expect conflicts in `README.md`, `docs/*`, command registries, menus, graph/variable/place code.
 6. **Sync cadence:** fetch upstream regularly; merge/rebase on short intervals; resolve conflicts in small batches.
 7. **Tests as merge armor:** every infographic capability gets command-level tests so upstream changes cause explicit failures.
+8. **Fork-only planning dir:** `AGENTS.md` designates `plan/` as an optional gitignored notebook; `plans/` is kept on the `pivot` fork for shared planning and should be excluded from any upstream PRs.
 
 ## 5. Architecture Principles
 
@@ -82,9 +87,11 @@ git checkout -b product/infographic
 - **Deterministic generation:** same CSV + template + options => same layout/result, except explicit randomness options.
 - **Provenance-safe assets:** every bundled decorative SVG/chart-design asset has license/source record in `ASSETS.md` and required license texts in `licenses/` (or asset-local license files following repo convention).
 - **No handwritten JS/TS:** follow Rust-only app rule.
-- **Security/robustness:** treat CSV/SVG/template/metadata inputs as untrusted; size limits, parse errors, no panic on bad input.
+- **Security/robustness:** treat CSV/SVG/template/metadata inputs as untrusted; size limits, parse errors, no panic on bad input (`unwrap_used`/`expect_used`/`panic` denied in non-test workspace lints).
+- **Automation root enforcement:** all file-system reads/writes (`csvPath`, asset paths, `infographic.export`) must enforce `AutomationRoots` (`--automation-read-root` / `--automation-write-root`) when invoked via MCP/CLI (`AGENTS.md` #18).
+- **WASM / embedder compatibility:** built-in preset art and decorative SVG packs must be embedded/bundled (e.g., `include_str!`/`include_bytes!` or asset bundle) rather than assuming local disk paths, and `csvData`/`csvBase64` must work without `csvPath` on `vectorcraft-web`.
 - **Multi-source composition:** one infographic page/artboard can contain multiple charts from different CSV sources, plus multiple decorative/object layers; each chart keeps its own data mapping and preset metadata.
-- **Validate-then-mutate:** infographic commands validate all inputs before mutating the document. On validation/runtime failure, they return actionable errors and make no partial document mutation beyond the normal single-command undo boundary.
+- **Validate-then-mutate & single undo boundary:** infographic commands validate all inputs before mutating the document. On validation/runtime failure, they return actionable errors and make no partial document mutation; successful multi-step generation (`graph.*` + overlays + metadata) executes within a single undoable command boundary.
 - **Metadata compatibility:** infographic metadata is versioned and additive; older/upstream builds must be able to ignore unknown infographic metadata without breaking document open/save/edit of normal content.
 
 ## 6. Proposed Target UX
@@ -130,7 +137,7 @@ Infographic charts prioritize visual clarity over dense analytical axes. The fir
 
 **Preset constraints (MVP):**
 - `bar-building` is a preset-art column design. The "two-color theme" means preset palette variants baked into the design/asset bundle, not user-defined per-bar-item color rules.
-- `bar-arrow-highlight` targets a deterministic rule: `none | last | max | min | index`. For ties in `max|min`, pick the first matching index in category order unless explicitly configured later.
+- `bar-arrow-highlight` targets a deterministic rule: `none | last | max | min | index`. For ties in `max|min`, pick the first matching index in category order unless explicitly configured later. In MVP, `bar-arrow-highlight` targets single-series bar charts (primary series); multi-series/stacked highlight behavior must either be explicitly rejected or documented before enabling.
 - Presets must degrade clearly: if a design asset is missing/invalid, command fails with no mutation.
 - All bundled preset/design SVGs follow the same provenance rules as decorative assets (`ASSETS.md` + licenses).
 
@@ -151,6 +158,8 @@ Custom infographic presets should use minimal chart chrome by default:
 - **Ownership:** overlay nodes are tagged in infographic chart metadata (generated node ids/group id). Metadata is the source of truth for cleanup/update.
 - **Single regen path:** `infographic.updateChart` (and internal create path) recomputes target selection and regenerates overlays. It removes stale overlays before adding new ones.
 - **Triggers:** data/mapping/preset/axis/highlight/size/type changes that affect bar geometry trigger overlay regen. Unrelated charts are untouched.
+- **Placement preservation:** if `updateChart` is called without explicit `placement` overrides, preserve the chart's current position/size on the canvas (including manual user moves/resizes) rather than snapping back to initial creation coordinates.
+- **Source portability:** `source.path` should store document-relative paths where possible; style/preset/axis/highlight-only `updateChart` calls should still work using existing graph data when an external CSV file is unavailable.
 - **Edit behavior:** users may manually edit overlay vectors; subsequent `updateChart` may replace them. UI/docs must state this clearly.
 - **Failure policy:** if target cannot be resolved (invalid index/empty data), command fails before mutation or applies documented fallback (`none`) only when explicitly requested by param; default is error.
 
@@ -190,12 +199,12 @@ Custom infographic presets should use minimal chart chrome by default:
 - Metadata schema ADR/draft (`schemaVersion`, ownership, compatibility).
 
 **Acceptance criteria:**
-- [ ] Fork/sync workflow documented with exact git commands.
-- [ ] Existing reusable primitives mapped to file paths.
-- [ ] MVP/non-goal boundary approved.
-- [ ] Metadata storage decision documented: location, schema version, unknown-field compatibility, stale node reference handling, and no-mutation-on-error expectations.
-- [ ] Asset provenance rules documented, including `ASSETS.md`/license requirements for decorative and preset design assets.
-- [ ] No product code changes required in this phase.
+- [x] Fork/sync workflow documented with exact git commands (`pivot` branch + `origin`/`upstream` remotes).
+- [x] Existing reusable primitives mapped to file paths.
+- [x] MVP/non-goal boundary approved.
+- [x] Metadata storage decision documented: location (`Document.unknown["infographic"]`), schema version, unknown-field compatibility, stale node reference handling, and no-mutation-on-error expectations.
+- [x] Asset provenance rules documented, including `ASSETS.md`/license requirements for decorative and preset design assets.
+- [ ] Optional standalone ADRs in `plans/` (if separate files are still desired beyond this document).
 
 ## Phase 1 - CSV Ingestion and Data Mapping
 
@@ -282,7 +291,8 @@ Custom infographic presets should use minimal chart chrome by default:
 - Reuse `file.place` / SVG import path; normalize placement (center/anchor, scale, optional recolor).
 - Add optional recolor strategy:
   - preserve multi-color art by default.
-  - optional single-tone/brand tint mode for compatible SVGs.
+  - optional single-tone/brand tint mode only for compatible monochrome/manifest-marked SVGs (never clobber `fill="none"`, `stroke="none"`, or gradients).
+- Ensure built-in decorative SVGs are embedded/bundled for WASM and offline builds (no runtime dependency on CWD relative paths).
 - Establish provenance workflow:
   - update `ASSETS.md`.
   - include license texts in `licenses/` or asset-local license files as repo convention requires.
@@ -296,11 +306,11 @@ Custom infographic presets should use minimal chart chrome by default:
 - UI asset browser later.
 
 **Acceptance criteria:**
-- [ ] User/agent can list available decorative SVG assets.
-- [ ] Selected decorative SVG can be placed into active document/artboard at requested position/size.
-- [ ] Placement uses existing SVG import behavior; imported objects are editable vectors.
-- [ ] Every bundled decorative and chart-design preset asset has provenance and license entries.
-- [ ] No incompatible/unattributed asset is added.
+- [x] User/agent can list available decorative SVG assets (`infographic.listDecorations`).
+- [x] Selected decorative SVG can be placed into active document/artboard at requested position/size (`infographic.placeDecoration`).
+- [x] Placement uses existing SVG import behavior (`file.place`); imported objects are editable vectors.
+- [x] Every bundled decorative and chart-design preset asset has provenance and license entries in `ASSETS.md`.
+- [x] No incompatible/unattributed asset is added.
 
 ## Phase 4 - Infographic Layout and Template Composition
 
@@ -330,13 +340,13 @@ Custom infographic presets should use minimal chart chrome by default:
 - Possibly `object.group`, `transform`, alignment commands.
 
 **Acceptance criteria:**
-- [ ] One command can generate a complete infographic draft from CSV + template + options.
-- [ ] Output contains editable chart, text, and decorative SVG elements.
-- [ ] Layout supports multiple chart slots/blocks on one page with deterministic placement.
-- [ ] Layout respects template margins/grid/anchors across supported artboard sizes.
-- [ ] Text shortcuts/actions reuse existing VectorCraft text styling commands/panels; no duplicate text engine is introduced.
-- [ ] Generation is deterministic given same inputs/options.
-- [ ] Command failure before/ during validation causes no document mutation; mutation path is single undoable command boundary.
+- [x] One command (`infographic.createFromCsv`) can generate a complete infographic draft from CSV + template + options.
+- [x] Output contains editable chart, text, and decorative SVG elements.
+- [x] Layout supports multiple chart slots/blocks on one page with deterministic placement.
+- [x] Layout respects template margins/grid/anchors across supported artboard sizes.
+- [x] Text shortcuts/actions reuse existing VectorCraft text styling commands/panels; no duplicate text engine is introduced.
+- [x] Generation is deterministic given same inputs/options.
+- [ ] Command failure before/during validation causes no document mutation; mutation path is single undoable command boundary (validation before mutation implemented; multi-step single-undo transaction wrapper still to be consolidated).
 
 ## Phase 5 - UI, MCP, and Workflow Integration
 
@@ -410,10 +420,11 @@ These apply to every phase that changes behavior:
 - [ ] **Command-driven:** document mutations go through engine commands.
 - [ ] **Editable output:** generated items remain normal VectorCraft objects.
 - [ ] **No silent degradation:** unsupported/partial behavior reports warnings/errors clearly.
-- [ ] **Provenance:** all bundled assets have source/license attribution.
-- [ ] **Compatibility:** existing graph/place/file workflows unaffected; unknown infographic metadata is safely ignored by older/upstream-compatible paths where feasible.
+- [ ] **Provenance & naming:** all bundled assets have source/license attribution (`cargo xtask assets`), and user-visible feature names follow `standards/naming.md` (`cargo xtask brands`).
+- [ ] **Compatibility:** existing graph/place/file workflows unaffected; unknown infographic metadata is safely ignored by older/upstream-compatible paths where feasible; WASM target builds cleanly.
 - [ ] **Atomicity:** validation failures cause no mutation; command mutations are single undoable steps with no stale duplicate generated artifacts.
-- [ ] **Tests:** unit/integration tests cover success, failure, and edge cases.
+- [ ] **Security:** file paths honor `AutomationRoots` (`--automation-read-root`/`--automation-write-root`); no `unwrap`/`expect`/`panic!` in non-test code.
+- [ ] **Checks & tests:** unit/integration tests cover success, failure, and edge cases; `cargo fmt`, `cargo clippy -p <crate> --all-targets`, and `cargo xtask layers` pass for touched crates.
 - [ ] **Docs:** MCP/command docs updated for new public commands.
 
 ## 9. Suggested Command Surface (Draft)
@@ -421,11 +432,12 @@ These apply to every phase that changes behavior:
 | Command | Purpose | Phase |
 |---------|---------|-------|
 | `infographic.inspectCsv` | Parse CSV, return columns/types/sample/warnings. | 1 |
-| `infographic.mapData` | Validate mapping and produce normalized dataset for charts. | 1 |
+| `infographic.mapData` | *(Consolidated into `inspectCsv` + chart commands in MVP; keep optional if needed as standalone dry-run.)* | 1 |
 | `infographic.listChartPresets` | List built-in/custom chart presets, defaults, and preview metadata. | 2 |
 | `infographic.createChart` | Create chart from mapped data + preset. | 2 |
 | `infographic.addChartFromCsv` | Add a new chart block to an infographic page from a CSV source. | 2 |
 | `infographic.updateChart` | Single deterministic regen path for a selected chart block's source/mapping/preset/style/overlays. | 2 |
+| `infographic.removeChart` | Remove a chart block's generated nodes/overlays and clean its metadata entry. | 2 / 5 |
 | `infographic.listCharts` | List chart blocks, sources, mappings, preset metadata, and stale-reference warnings for active infographic/page. | 2 |
 | `infographic.listTemplates` | List available infographic templates. | 4 |
 | `infographic.listDecorations` | List decorative SVG/symbol assets. | 3 |
@@ -601,16 +613,16 @@ These apply to every phase that changes behavior:
 
 The repurpose MVP is done when:
 
-- [x] Engine command foundation can create/update/list CSV-driven infographic chart blocks with additive metadata.
+- [x] Engine command foundation can create/update/remove/list CSV-driven infographic chart blocks with additive metadata.
 - [x] `infographic.updateChart` is the single deterministic regen path and cleans stale highlight overlays.
 - [x] `bar-building` preset applies a real sliding column design (programmatic, provenance recorded); palette variants remain limited.
 - [x] `bar-arrow-highlight` supports `none|last|max|min|index` with deterministic first-index tie-break for max/min.
-- [ ] A user can provide CSV data, map columns, pick a template/preset, and generate an editable infographic in VectorCraft UI.
-- [ ] One infographic page can contain multiple chart blocks from different CSV sources, managed from the right-side Charts tab.
-- [ ] The user can place ready-to-use decorative SVG assets from a curated, licensed library through the Objects tab/panel flow.
-- [ ] The Infographic Text shortcut surface reuses existing VectorCraft text styling functions; generated/edited text uses normal text objects and commands.
-- [ ] Infographic metadata is versioned/additive and does not break normal document behavior in compatible paths.
-- [ ] Generated result exports to PNG/SVG/PDF.
-- [ ] Commands are documented and available to MCP/automation.
-- [ ] Existing VectorCraft core workflows remain intact.
+- [x] A user can provide CSV data, map columns, pick a template/preset, and generate an editable infographic in VectorCraft UI (`Window › Infographic`).
+- [x] One infographic page can contain multiple chart blocks from different CSV sources, managed from the right-side Charts tab.
+- [x] The user can place ready-to-use decorative SVG assets from a curated, licensed library through the Objects tab/panel flow.
+- [x] The Infographic Text shortcut surface reuses existing VectorCraft text styling functions; generated/edited text uses normal text objects and commands.
+- [x] Infographic metadata is versioned/additive and does not break normal document behavior in compatible paths.
+- [x] Generated result exports to PNG/SVG/PDF (`infographic.export` -> `document.export`; SVG export tested).
+- [x] Commands are documented (`docs/mcp.md`) and available to MCP/automation.
+- [ ] Existing VectorCraft core workflows remain intact (run full `cargo xtask ci` / regression suite).
 - [ ] Upstream sync process is documented and rehearsed.

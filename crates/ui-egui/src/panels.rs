@@ -26,6 +26,7 @@ pub mod graphic_styles;
 pub mod history;
 pub mod image_trace;
 pub mod info;
+pub mod infographic;
 pub mod layers;
 pub mod learn;
 pub mod libraries;
@@ -330,6 +331,7 @@ pub fn show_icon_panel(app: &mut VectorcraftApp, ui: &mut Ui, id: &str) {
         "attributes" => attributes::show(app, ui),
         svg_interactivity::ID => svg_interactivity::show(app, ui),
         variables::ID => variables::show(app, ui),
+        infographic::ID => infographic::show(app, ui),
         "colorThemes" => color_themes::show(app, ui),
         color_wheel::ID => color_wheel::show(app, ui),
         links::ID => links::show(app, ui),

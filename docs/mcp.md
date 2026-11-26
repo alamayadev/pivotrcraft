@@ -16243,6 +16243,22 @@ for this on the desktop). Without waiting, an accepted background save still rep
 completion; any later failure opens no panel. MCP retains its usual tool-name prefix around
 the error text. The interactive fallback applies only to ordinary File > Save, not Close/Quit.
 
+## Infographic commands
+
+CSV-driven infographic chart blocks, decorative SVG assets, layout templates, and export:
+
+- `infographic.inspectCsv`: `{path?|data?|dataBase64?|csv?, delimiter?: "auto"|"comma"|"tab"|"semicolon", maxRows?: 1..200}` → `{source, delimiter, columns, rowCount, sampleRows, warnings}`.
+- `infographic.listChartPresets`: `{}` → `{presets}` (`bar-building`, `bar-arrow-highlight`).
+- `infographic.createChart` / `infographic.addChartFromCsv`: `{infographicId?, csvPath?|csvData?|csvBase64?|csv?, mapping:{category, values:[...], series?, missing?: "skip"|"zero"|"error", aggregation?: "none"|"sum"|"avg"|"count"|"min"|"max"}, preset?, axis?: {y?: "minimal"|"hidden", xLabelStyle?: "bold"|"normal", legend?: bool}, highlight?: {mode?: "none"|"last"|"max"|"min"|"index", index?}, placement?: {x?, y?, width?, height?, artboardId?}, name?}`.
+- `infographic.updateChart`: `{chartId, infographicId?, csvPath?|csvData?|csvBase64?|csv?, mapping?, preset?, axis?, highlight?, name?}` (single deterministic regen path; cleans stale highlight overlays).
+- `infographic.removeChart`: `{chartId, infographicId?}` (removes chart nodes, overlays, and metadata entry).
+- `infographic.listCharts`: `{infographicId?}` → `{charts, warnings}` (includes stale node reference warnings).
+- `infographic.listDecorations`: `{category?, tag?}` → `{decorations}` (`trend-up`, `trend-down`, `target-ring`, `accent-dots`, `callout-ribbon`, `spark-star`).
+- `infographic.placeDecoration`: `{asset, at?: [x, y], rect?: [x, y, width, height], scale?, tint?: "#RRGGBB", infographicId?}` (places embedded SVG as editable vector group).
+- `infographic.listTemplates`: `{}` → `{templates}` (`bar-report-basic`, `kpi-highlight-card`, `presentation-wide`).
+- `infographic.createFromCsv`: `{template?, newDocument?, csvPath?|csvData?|csvBase64?|csv?, mapping, preset?, axis?, highlight?, title?, subtitle?, sourceNote?, decorations?, includeTemplateDecorations?, infographicId?, name?}`.
+- `infographic.export`: `{path, format?: "png"|"svg"|"svgz"|"pdf"|"jpg"|"webp", scale?, useArtboards?}` (delegates to `document.export` and honors `--automation-write-root`).
+
 ## Revision history
 
 | Date | Change |

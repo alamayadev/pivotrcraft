@@ -6,7 +6,9 @@ use vectorcraft_doc::{Appearance, GraphDesign, Node, NodeId, NodeKind};
 use vectorcraft_geom::{BezPath, PathData, Rect};
 
 use super::csv::{Delimiter, decode_csv_bytes, load_csv_input, parse_number, parse_rows};
-use super::metadata::{SCHEMA_VERSION, chart_warnings, ensure_infographic, find_chart_mut, next_chart_id, push_chart, read_doc_meta, write_doc_meta};
+use super::metadata::{
+    SCHEMA_VERSION, chart_warnings, ensure_infographic, find_chart_mut, next_chart_id, push_chart, read_doc_meta, remove_chart_meta, write_doc_meta,
+};
 use super::presets::{default_preset, is_supported_preset};
 use super::{bad_param, text_or};
 
@@ -92,6 +94,7 @@ fn create_or_add(s: &mut crate::Session, p: &Value, cmd: &str) -> crate::Result<
     let normalized = normalize_data(&rows, &mapping, cmd)?;
     let placement = parse_placement(p)?;
     validate_preset(&opts, cmd)?;
+    let _ = resolve_highlight_target(&opts, &normalized, cmd)?;
 
     // Validation only above. Mutations below.
     let graph_csv = to_graph_csv(&normalized);
@@ -104,13 +107,14 @@ fn create_or_add(s: &mut crate::Session, p: &Value, cmd: &str) -> crate::Result<
     let created = s.execute("graph.create", &create_params)?;
     let graph_id = created.get("id").and_then(Value::as_u64).ok_or_else(|| bad_param(cmd, "graph.create did not return id"))?;
 
-    apply_chart_style(s, graph_id, &opts, &normalized, cmd)?;
+    let overlay_ids = apply_chart_style(s, graph_id, &opts, &normalized, cmd)?;
 
-    let chart_id = write_chart_metadata(s, p, cmd, &input.source, &mapping, &opts, graph_id, &normalized)?;
+    let chart_id = write_chart_metadata(s, p, (&input.source, &text), &mapping, &opts, (graph_id, &overlay_ids), &normalized)?;
 
     Ok(json!({
         "chartId": chart_id,
         "graphNodeId": graph_id,
+        "overlayNodeIds": overlay_ids,
         "preset": opts.preset,
         "rows": normalized.categories.len(),
         "series": normalized.series.len(),
@@ -122,7 +126,7 @@ pub fn update_chart(s: &mut crate::Session, p: &Value) -> crate::Result<Value> {
     let st = s.doc()?;
     let (mut root, _warnings) = read_doc_meta(&st.doc);
     let infographic_id = text_or(p, "infographicId");
-    let info = ensure_infographic(&mut root, infographic_id, None);
+    let info = ensure_infographic(&mut root, infographic_id, None).ok_or_else(|| bad_param(C_UPDATE, "infographic metadata unavailable"))?;
     let existing = find_chart_mut(info, chart_id).ok_or_else(|| bad_param(C_UPDATE, format!("unknown chart `{chart_id}`")))?.clone();
 
     let mapping = if p.get("mapping").is_some() { parse_mapping(p, C_UPDATE)? } else { mapping_from_meta(&existing, C_UPDATE)? };
@@ -148,6 +152,7 @@ pub fn update_chart(s: &mut crate::Session, p: &Value) -> crate::Result<Value> {
         return Err(bad_param(C_UPDATE, "CSV has no rows"));
     }
     let normalized = normalize_data(&rows, &mapping, C_UPDATE)?;
+    let _ = resolve_highlight_target(&opts, &normalized, C_UPDATE)?;
 
     let graph_id = existing
         .get("graphNodeId")
@@ -162,11 +167,11 @@ pub fn update_chart(s: &mut crate::Session, p: &Value) -> crate::Result<Value> {
     cleanup_overlays(s, &existing);
     let graph_csv = to_graph_csv(&normalized);
     s.execute("graph.setData", &json!({"id": graph_id, "csv": graph_csv}))?;
-    apply_chart_style(s, graph_id, &opts, &normalized, C_UPDATE)?;
+    let overlay_ids = apply_chart_style(s, graph_id, &opts, &normalized, C_UPDATE)?;
 
     let st2 = s.doc()?;
     let (mut root2, _) = read_doc_meta(&st2.doc);
-    let info2 = ensure_infographic(&mut root2, infographic_id, None);
+    let info2 = ensure_infographic(&mut root2, infographic_id, None).ok_or_else(|| bad_param(C_UPDATE, "infographic metadata unavailable"))?;
     let chart = find_chart_mut(info2, chart_id).ok_or_else(|| bad_param(C_UPDATE, "chart metadata missing after update"))?;
     chart.insert("source".into(), json!({"kind":"csv","path":source, "csv": if has_csv_input(p) { json!(text) } else { existing.get("source").and_then(|v| v.get("csv")).cloned().unwrap_or(json!("")) }}));
     chart.insert("mapping".into(), mapping_to_json(&mapping));
@@ -179,13 +184,56 @@ pub fn update_chart(s: &mut crate::Session, p: &Value) -> crate::Result<Value> {
     chart.insert("graphNodeId".into(), json!(graph_id));
     chart.insert("nodeId".into(), json!(graph_id));
     chart.insert("schemaVersion".into(), json!(SCHEMA_VERSION));
-    // overlay cleanup done; keep ids empty for now (highlight overlay not persisted yet)
-    chart.insert("overlayNodeIds".into(), json!([]));
-    chart.insert("generatedNodeIds".into(), json!([graph_id]));
+    let mut generated = vec![graph_id];
+    generated.extend(&overlay_ids);
+    chart.insert("overlayNodeIds".into(), json!(overlay_ids));
+    chart.insert("generatedNodeIds".into(), json!(generated));
     let st2m = s.doc_mut()?;
     write_doc_meta(Arc::make_mut(&mut st2m.doc), root2);
 
-    Ok(json!({"chartId": chart_id, "graphNodeId": graph_id, "preset": opts.preset, "updated": true}))
+    Ok(json!({"chartId": chart_id, "graphNodeId": graph_id, "overlayNodeIds": overlay_ids, "preset": opts.preset, "updated": true}))
+}
+
+pub fn remove_chart(s: &mut crate::Session, p: &Value) -> crate::Result<Value> {
+    const C_REMOVE: &str = "infographic.removeChart";
+    let chart_id = text_or(p, "chartId").ok_or_else(|| bad_param(C_REMOVE, "missing `chartId`"))?;
+    let infographic_id = text_or(p, "infographicId");
+    let st = s.doc()?;
+    let (mut root, _) = read_doc_meta(&st.doc);
+    let info = ensure_infographic(&mut root, infographic_id, None).ok_or_else(|| bad_param(C_UPDATE, "infographic metadata unavailable"))?;
+    let removed = remove_chart_meta(info, chart_id).ok_or_else(|| bad_param(C_REMOVE, format!("unknown chart `{chart_id}`")))?;
+
+    let mut ids_to_delete: Vec<u64> = Vec::new();
+    for key in ["graphNodeId", "nodeId"] {
+        if let Some(id) = removed.get(key).and_then(Value::as_u64) {
+            if !ids_to_delete.contains(&id) {
+                ids_to_delete.push(id);
+            }
+        }
+    }
+    for key in ["overlayNodeIds", "generatedNodeIds"] {
+        if let Some(arr) = removed.get(key).and_then(Value::as_array) {
+            for id in arr.iter().filter_map(Value::as_u64) {
+                if !ids_to_delete.contains(&id) {
+                    ids_to_delete.push(id);
+                }
+            }
+        }
+    }
+
+    s.edit("Remove Infographic Chart", |doc, sel| {
+        for id in &ids_to_delete {
+            let nid = NodeId(*id);
+            if doc.node(nid).is_some() {
+                let _ = doc.remove(nid);
+                sel.objects.retain(|x| *x != nid);
+            }
+        }
+        write_doc_meta(doc, root);
+        Ok(())
+    })?;
+
+    Ok(json!({"chartId": chart_id, "removed": true, "removedNodeIds": ids_to_delete}))
 }
 
 fn has_csv_input(p: &Value) -> bool {
@@ -510,7 +558,7 @@ fn csv_escape(s: &str) -> String {
     if s.contains([',', '"', '\n', '\r']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() }
 }
 
-fn apply_chart_style(s: &mut crate::Session, graph_id: u64, opts: &ChartOptions, normalized: &NormalizedData, cmd: &str) -> crate::Result<()> {
+fn apply_chart_style(s: &mut crate::Session, graph_id: u64, opts: &ChartOptions, normalized: &NormalizedData, cmd: &str) -> crate::Result<Vec<u64>> {
     let set_type = json!({
         "id": graph_id,
         "type": "column",
@@ -526,14 +574,22 @@ fn apply_chart_style(s: &mut crate::Session, graph_id: u64, opts: &ChartOptions,
         let _ = apply_bold_category_labels(s, graph_id);
     }
 
-    if opts.preset == "bar-building" {
-        apply_bar_building_preset(s, graph_id)?;
+    match opts.preset.as_str() {
+        "bar-building" => apply_column_design_preset(s, graph_id, "Infographic Building", build_building_design_art)?,
+        "bar-isometric-blue" => apply_column_design_preset(s, graph_id, "Infographic Isometric Blue", build_isometric_blue_design_art)?,
+        "bar-stepped-ribbon" => apply_column_design_preset(s, graph_id, "Infographic Stepped Ribbon", build_stepped_ribbon_design_art)?,
+        "bar-decline-green-blue" => apply_column_design_preset(s, graph_id, "Infographic Green Blue", build_green_blue_design_art)?,
+        "bar-isometric-orange" => apply_column_design_preset(s, graph_id, "Infographic Isometric Orange", build_isometric_orange_design_art)?,
+        _ => {}
     }
 
+    let mut overlay_ids = Vec::new();
     if opts.preset == "bar-arrow-highlight" && opts.highlight_mode != "none" {
-        apply_arrow_highlight(s, graph_id, opts, normalized, cmd)?;
+        if let Some(id) = apply_arrow_highlight(s, graph_id, opts, normalized, cmd)? {
+            overlay_ids.push(id);
+        }
     }
-    Ok(())
+    Ok(overlay_ids)
 }
 
 fn apply_bold_category_labels(s: &mut crate::Session, graph_id: u64) -> crate::Result<()> {
@@ -575,14 +631,20 @@ fn apply_bold_category_labels(s: &mut crate::Session, graph_id: u64) -> crate::R
     Ok(())
 }
 
-fn apply_arrow_highlight(s: &mut crate::Session, graph_id: u64, opts: &ChartOptions, normalized: &NormalizedData, cmd: &str) -> crate::Result<()> {
+fn apply_arrow_highlight(
+    s: &mut crate::Session,
+    graph_id: u64,
+    opts: &ChartOptions,
+    normalized: &NormalizedData,
+    cmd: &str,
+) -> crate::Result<Option<u64>> {
     let target = resolve_highlight_target(opts, normalized, cmd)?;
     let Some(target_idx) = target else {
-        return Ok(());
+        return Ok(None);
     };
     let bar = find_target_bar_rect(s, graph_id, target_idx, normalized.categories.len())?;
     let Some(rect) = bar else {
-        return Ok(());
+        return Ok(None);
     };
 
     let overlay_id = s.edit("Infographic Highlight", |doc, _sel| {
@@ -611,25 +673,7 @@ fn apply_arrow_highlight(s: &mut crate::Session, graph_id: u64, opts: &ChartOpti
         Ok(id)
     })?;
 
-    // Record overlay id in chart metadata.
-    let st = s.doc_mut()?;
-    let (mut root, _) = read_doc_meta(&st.doc);
-    if let Some(info) = root.get_mut("infographics").and_then(Value::as_array_mut).and_then(|a| a.first_mut()).and_then(Value::as_object_mut) {
-        if let Some(charts) = info.get_mut("charts").and_then(Value::as_array_mut) {
-            for ch in charts.iter_mut().filter_map(Value::as_object_mut) {
-                if ch.get("graphNodeId").and_then(Value::as_u64) == Some(graph_id) {
-                    ch.insert("overlayNodeIds".into(), json!([overlay_id.0]));
-                    let mut generated = ch.get("generatedNodeIds").and_then(Value::as_array).cloned().unwrap_or_else(|| vec![json!(graph_id)]);
-                    if !generated.iter().any(|v| v.as_u64() == Some(overlay_id.0)) {
-                        generated.push(json!(overlay_id.0));
-                    }
-                    ch.insert("generatedNodeIds".into(), Value::Array(generated));
-                }
-            }
-        }
-    }
-    write_doc_meta(Arc::make_mut(&mut st.doc), root);
-    Ok(())
+    Ok(Some(overlay_id.0))
 }
 
 fn cleanup_overlays(s: &mut crate::Session, chart: &Map<String, Value>) {
@@ -778,11 +822,10 @@ fn make_arrow_overlay(doc: &mut vectorcraft_doc::Document, bar: Rect) -> Node {
 fn write_chart_metadata(
     s: &mut crate::Session,
     p: &Value,
-    _cmd: &str,
-    source: &str,
+    (source, csv_text): (&str, &str),
     mapping: &Mapping,
     opts: &ChartOptions,
-    graph_id: u64,
+    (graph_id, overlay_ids): (u64, &[u64]),
     normalized: &NormalizedData,
 ) -> crate::Result<String> {
     let infographic_id = text_or(p, "infographicId");
@@ -792,12 +835,13 @@ fn write_chart_metadata(
         &mut root,
         infographic_id,
         p.get("placement").and_then(|pl| pl.get("artboardId")).and_then(Value::as_u64).map(|v| v as u32),
-    );
+    )
+    .ok_or_else(|| bad_param("infographic.createChart", "infographic metadata unavailable"))?;
     let chart_id = next_chart_id(info);
     let mut chart = Map::new();
     chart.insert("id".into(), json!(chart_id));
     chart.insert("schemaVersion".into(), json!(SCHEMA_VERSION));
-    chart.insert("source".into(), json!({"kind":"csv", "path": source, "csv": ""}));
+    chart.insert("source".into(), json!({"kind":"csv", "path": source, "csv": csv_text}));
     chart.insert("mapping".into(), mapping_to_json(mapping));
     chart.insert("preset".into(), json!(opts.preset));
     chart.insert("axis".into(), json!({"y":opts.y_axis,"xLabelStyle":opts.x_label_style,"legend":opts.legend}));
@@ -805,10 +849,12 @@ fn write_chart_metadata(
     if let Some(name) = &opts.name {
         chart.insert("name".into(), json!(name));
     }
+    let mut generated = vec![graph_id];
+    generated.extend_from_slice(overlay_ids);
     chart.insert("graphNodeId".into(), json!(graph_id));
     chart.insert("nodeId".into(), json!(graph_id));
-    chart.insert("generatedNodeIds".into(), json!([graph_id]));
-    chart.insert("overlayNodeIds".into(), json!([]));
+    chart.insert("generatedNodeIds".into(), json!(generated));
+    chart.insert("overlayNodeIds".into(), json!(overlay_ids));
     chart.insert("dataSummary".into(), json!({"categories": normalized.categories.len(), "series": normalized.series.len()}));
     push_chart(info, chart);
     let chart_id = info
@@ -822,8 +868,8 @@ fn write_chart_metadata(
     write_doc_meta(Arc::make_mut(&mut st.doc), root);
     Ok(chart_id)
 }
-fn apply_bar_building_preset(s: &mut crate::Session, graph_id: u64) -> crate::Result<()> {
-    let design_name = ensure_bar_building_design(s)?;
+fn apply_column_design_preset(s: &mut crate::Session, graph_id: u64, design_name: &str, build_art: fn() -> Node) -> crate::Result<()> {
+    ensure_column_design(s, design_name, build_art)?;
     s.execute(
         "graph.column",
         &json!({
@@ -836,25 +882,60 @@ fn apply_bar_building_preset(s: &mut crate::Session, graph_id: u64) -> crate::Re
     Ok(())
 }
 
-fn ensure_bar_building_design(s: &mut crate::Session) -> crate::Result<String> {
-    let name = "Infographic Building".to_string();
+fn ensure_column_design(s: &mut crate::Session, name: &str, build_art: fn() -> Node) -> crate::Result<()> {
     {
         let st = s.doc()?;
         if st.doc.graph_designs.iter().any(|d| d.name == name) {
-            return Ok(name);
+            return Ok(());
         }
     }
 
-    let art = build_building_design_art();
+    let art = build_art();
     s.edit("Infographic Design", |doc, _sel| {
         if doc.graph_designs.iter().any(|d| d.name == name) {
             return Ok(());
         }
         let art = doc.reid(&art);
-        doc.graph_designs.push(GraphDesign { name: name.clone(), art: Arc::new(art) });
+        doc.graph_designs.push(GraphDesign { name: name.to_string(), art: Arc::new(art) });
         Ok(())
     })?;
-    Ok(name)
+    Ok(())
+}
+
+fn build_isometric_blue_design_art() -> Node {
+    let frame = node_path("M 0 0 L 100 0 L 100 200 L 0 200 Z", Paint::None, Paint::None, 0.0, false);
+    let left_face = node_path("M 0 26 L 50 52 L 50 200 L 0 174 Z", Paint::solid(Color::rgb8(92, 122, 161)), Paint::None, 0.0, false);
+    let right_face = node_path("M 50 52 L 100 26 L 100 174 L 50 200 Z", Paint::solid(Color::rgb8(52, 85, 128)), Paint::None, 0.0, false);
+    let top_cap = node_path("M 50 0 L 100 26 L 50 52 L 0 26 Z", Paint::solid(Color::rgb8(126, 151, 182)), Paint::None, 0.0, false);
+    let guide = node_path("M 0 60 L 100 60", Paint::None, Paint::solid(Color::rgb(0.0, 0.0, 0.0)), 0.0, true);
+    Node::group(NodeId(0), vec![Arc::new(frame), Arc::new(left_face), Arc::new(right_face), Arc::new(top_cap), Arc::new(guide)])
+}
+
+fn build_stepped_ribbon_design_art() -> Node {
+    let frame = node_path("M 0 0 L 100 0 L 100 200 L 0 200 Z", Paint::None, Paint::None, 0.0, false);
+    let body = node_path("M 0 24 L 100 24 L 100 200 L 0 200 Z", Paint::solid(Color::rgb8(229, 135, 101)), Paint::None, 0.0, false);
+    let fold = node_path("M 0 24 L 22 0 L 100 0 L 100 24 Z", Paint::solid(Color::rgb8(96, 125, 155)), Paint::None, 0.0, false);
+    let accent = node_path("M 70 24 L 100 24 L 100 200 L 70 200 Z", Paint::solid(Color::rgb8(51, 93, 143)), Paint::None, 0.0, false);
+    let guide = node_path("M 0 28 L 100 28", Paint::None, Paint::solid(Color::rgb(0.0, 0.0, 0.0)), 0.0, true);
+    Node::group(NodeId(0), vec![Arc::new(frame), Arc::new(body), Arc::new(accent), Arc::new(fold), Arc::new(guide)])
+}
+
+fn build_green_blue_design_art() -> Node {
+    let frame = node_path("M 0 0 L 100 0 L 100 200 L 0 200 Z", Paint::None, Paint::None, 0.0, false);
+    let left = node_path("M 0 16 L 68 16 L 68 200 L 0 200 Z", Paint::solid(Color::rgb8(46, 158, 143)), Paint::None, 0.0, false);
+    let right = node_path("M 68 16 L 100 16 L 100 200 L 68 200 Z", Paint::solid(Color::rgb8(31, 111, 139)), Paint::None, 0.0, false);
+    let cap = node_path("M 0 0 L 100 0 L 100 16 L 0 16 Z", Paint::solid(Color::rgb8(102, 194, 178)), Paint::None, 0.0, false);
+    let guide = node_path("M 0 22 L 100 22", Paint::None, Paint::solid(Color::rgb(0.0, 0.0, 0.0)), 0.0, true);
+    Node::group(NodeId(0), vec![Arc::new(frame), Arc::new(left), Arc::new(right), Arc::new(cap), Arc::new(guide)])
+}
+
+fn build_isometric_orange_design_art() -> Node {
+    let frame = node_path("M 0 0 L 100 0 L 100 200 L 0 200 Z", Paint::None, Paint::None, 0.0, false);
+    let left = node_path("M 14 34 L 50 54 L 50 200 L 14 180 Z", Paint::solid(Color::rgb8(245, 158, 11)), Paint::None, 0.0, false);
+    let right = node_path("M 50 54 L 86 34 L 86 180 L 50 200 Z", Paint::solid(Color::rgb8(217, 119, 6)), Paint::None, 0.0, false);
+    let arrow_cap = node_path("M 50 0 L 100 34 L 50 54 L 0 34 Z", Paint::solid(Color::rgb8(251, 191, 36)), Paint::None, 0.0, false);
+    let guide = node_path("M 0 60 L 100 60", Paint::None, Paint::solid(Color::rgb(0.0, 0.0, 0.0)), 0.0, true);
+    Node::group(NodeId(0), vec![Arc::new(frame), Arc::new(left), Arc::new(right), Arc::new(arrow_cap), Arc::new(guide)])
 }
 
 fn build_building_design_art() -> Node {

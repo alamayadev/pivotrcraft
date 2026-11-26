@@ -74,8 +74,10 @@ pub fn inspect_csv(p: &Value) -> crate::Result<Value> {
 
 pub fn load_csv_input(p: &Value, cmd: &str) -> crate::Result<CsvInput> {
     if let Some(path) = text_or(p, "csvPath").or_else(|| text_or(p, "path")) {
-        let abs = crate::cmd::fileio::absolute_path(path);
-        let bytes = std::fs::read(&abs).map_err(|e| bad_param(cmd, format!("cannot read CSV `{path}`: {e}")))?;
+        let bytes = crate::cmd::fileio::read_file_head(path, 1_048_576 + 1)?;
+        if bytes.len() > 1_048_576 {
+            return Err(bad_param(cmd, "CSV is larger than 1048576 bytes"));
+        }
         return Ok(CsvInput { bytes, source: path.to_string() });
     }
     if let Some(data) = text_or(p, "csvData").or_else(|| text_or(p, "data")).or_else(|| text_or(p, "csv")) {

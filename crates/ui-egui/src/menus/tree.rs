@@ -785,6 +785,7 @@ fn built_in_tree(english_names: bool, listed: &Listed) -> Vec<(&'static str, Vec
                     type_items
                 }),
                 panel("Variables", crate::panels::variables::ID),
+                panel("Infographic", crate::panels::infographic::ID),
             ];
             sort_by_localized_label(&mut panels, lang);
             window_items.extend(panels);

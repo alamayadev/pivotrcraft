@@ -276,6 +276,7 @@ pub const ICON_PANELS: &[(&str, &str, &str)] = &[
     (crate::panels::css_properties::ID, "CSS Properties", "globe"),
     (crate::panels::three_d::ID, "3D and Materials", "dc-cube"),
     (crate::panels::variables::ID, "Variables", "chart-column"),
+    (crate::panels::infographic::ID, "Infographic", "chart-column"),
     (crate::panels::script_console::ID, "Script Console", "message-circle"),
     (crate::panels::learn::ID, "Learn", "graduation-cap"),
     (crate::panels::discover::ID, "VectorCraft Help…", "search"),
@@ -304,7 +305,7 @@ pub const ICON_PANEL_GROUPS: &[&[&str]] = &[
     &["transform", "align", "pathfinder"],
     &["character", "paragraph", "glyphs"],
     &["history", "actions", "info", "navigator"],
-    &["variables"],
+    &["variables", "infographic"],
 ];
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

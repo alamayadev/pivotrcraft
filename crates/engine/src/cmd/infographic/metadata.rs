@@ -40,38 +40,41 @@ pub fn ensure_infographic<'a>(
     root: &'a mut Map<String, Value>,
     infographic_id: Option<&str>,
     artboard_id: Option<u32>,
-) -> &'a mut Map<String, Value> {
-    let infos = root.entry("infographics").or_insert_with(|| json!([]));
-    if !infos.is_array() {
-        *infos = json!([]);
+) -> Option<&'a mut Map<String, Value>> {
+    if !root.get("infographics").is_some_and(Value::is_array) {
+        root.insert("infographics".into(), json!([]));
     }
-    let arr = infos.as_array_mut().unwrap();
-    if let Some(id) = infographic_id {
-        if let Some(pos) = arr.iter().position(|v| v.get("id").and_then(Value::as_str) == Some(id)) {
-            return arr[pos].as_object_mut().unwrap();
+    let idx = {
+        let arr = root.get_mut("infographics").and_then(Value::as_array_mut)?;
+        if let Some(id) = infographic_id {
+            if let Some(pos) = arr.iter().position(|v| v.get("id").and_then(Value::as_str) == Some(id)) {
+                pos
+            } else {
+                let mut obj = Map::new();
+                obj.insert("id".into(), json!(id));
+                if let Some(a) = artboard_id {
+                    obj.insert("artboardId".into(), json!(a));
+                }
+                obj.insert("charts".into(), json!([]));
+                obj.insert("objects".into(), json!([]));
+                arr.push(Value::Object(obj));
+                arr.len() - 1
+            }
+        } else {
+            if arr.is_empty() {
+                let mut obj = Map::new();
+                obj.insert("id".into(), json!("infographic-1"));
+                if let Some(a) = artboard_id {
+                    obj.insert("artboardId".into(), json!(a));
+                }
+                obj.insert("charts".into(), json!([]));
+                obj.insert("objects".into(), json!([]));
+                arr.push(Value::Object(obj));
+            }
+            0
         }
-        let mut obj = Map::new();
-        obj.insert("id".into(), json!(id));
-        if let Some(a) = artboard_id {
-            obj.insert("artboardId".into(), json!(a));
-        }
-        obj.insert("charts".into(), json!([]));
-        obj.insert("objects".into(), json!([]));
-        arr.push(Value::Object(obj));
-        let last = arr.len() - 1;
-        return arr[last].as_object_mut().unwrap();
-    }
-    if arr.is_empty() {
-        let mut obj = Map::new();
-        obj.insert("id".into(), json!("infographic-1"));
-        if let Some(a) = artboard_id {
-            obj.insert("artboardId".into(), json!(a));
-        }
-        obj.insert("charts".into(), json!([]));
-        obj.insert("objects".into(), json!([]));
-        arr.push(Value::Object(obj));
-    }
-    arr[0].as_object_mut().unwrap()
+    };
+    root.get_mut("infographics").and_then(Value::as_array_mut).and_then(|arr| arr.get_mut(idx)).and_then(Value::as_object_mut)
 }
 
 pub fn find_chart_mut<'a>(info: &'a mut Map<String, Value>, chart_id: &str) -> Option<&'a mut Map<String, Value>> {
@@ -82,12 +85,21 @@ pub fn find_chart_mut<'a>(info: &'a mut Map<String, Value>, chart_id: &str) -> O
     })
 }
 
+pub fn remove_chart_meta(info: &mut Map<String, Value>, chart_id: &str) -> Option<Map<String, Value>> {
+    let charts = info.get_mut("charts")?.as_array_mut()?;
+    let pos = charts.iter().position(|v| v.get("id").and_then(Value::as_str) == Some(chart_id))?;
+    let removed = charts.remove(pos);
+    removed.as_object().cloned()
+}
+
 pub fn push_chart(info: &mut Map<String, Value>, chart: Map<String, Value>) {
     let charts = info.entry("charts").or_insert_with(|| json!([]));
     if !charts.is_array() {
         *charts = json!([]);
     }
-    charts.as_array_mut().unwrap().push(Value::Object(chart));
+    if let Some(arr) = charts.as_array_mut() {
+        arr.push(Value::Object(chart));
+    }
 }
 
 pub fn next_chart_id(info: &Map<String, Value>) -> String {

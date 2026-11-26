@@ -481,4 +481,69 @@ The shared PDF backend keeps the existing standard-font and CMap features. These
 | `hayro-interpret 0.7.0 / assets/CGATS001Compat-v2-micro.icc` | Clinton Ingram (saucecontrol/Compact-ICC-Profiles) | https://github.com/storytold/craft-libs/blob/9be9a63782298ab59cd9b7a42ee9cba4f42a5ccb/vendor/hayro-interpret/assets/CGATS001Compat-v2-micro.icc | CC0-1.0 | `73e1ba37d2bad5bab2a964f40a9eed96209666efc067c3322626214bbef234a0` | Default CMYK colour conversion (pinned hayro-interpret) |
 | `hayro-cmap 0.1.0 / assets/cmaps.brotli` | Adobe | https://github.com/storytold/craft-libs/blob/9be9a63782298ab59cd9b7a42ee9cba4f42a5ccb/vendor/hayro-cmap/assets/cmaps.brotli | BSD-3-Clause | `ddf37af521d904d5646c2fc37b2b7e912dc1b56f0d210190b61f598154758e46` | Character-code mapping tables required to read CJK PDFs. Non-visual dependency data; existing embedding unchanged |
 | `hayro-interpret 0.7.0 / src/font/generated/metrics.rs` | Adobe (Core 14 AFM metrics, PDF specification encodings); tables by The Hayro Authors | https://github.com/storytold/craft-libs/blob/9be9a63782298ab59cd9b7a42ee9cba4f42a5ccb/vendor/hayro-interpret/src/font/generated/metrics.rs | MIT OR Apache-2.0 | `2ec9e608573eda459de1e1d9bda3bb494315e36bee885acc88912a11fe0caa41` | Glyph widths and encodings for non-embedded standard fonts. Non-visual dependency data; existing embedding unchanged |
-| crates/engine/src/cmd/infographic/chart.rs (programmatic Infographic Building graph-design art) | VectorCraft contributors | Original programmatic vector art authored for VectorCraft infographic preset | MIT OR Apache-2.0 | Sliding-column building silhouette generated at runtime; no external binary asset |
+| `crates/engine/src/cmd/infographic/chart.rs` (programmatic Infographic Building graph-design art) | VectorCraft contributors | Original programmatic vector art authored for VectorCraft infographic preset | MIT OR Apache-2.0 | Sliding-column building silhouette generated at runtime; no external binary asset |
+
+## Infographic decorative assets
+
+| Asset | Author | Source | Licence | Notes |
+|---|---|---|---|---|
+| `assets/infographic/decorations/trend-up.svg` | VectorCraft contributors | Original geometric SVG authored for VectorCraft infographic pack | MIT OR Apache-2.0 | Upward trend indicator badge |
+| `assets/infographic/decorations/trend-down.svg` | VectorCraft contributors | Original geometric SVG authored for VectorCraft infographic pack | MIT OR Apache-2.0 | Downward trend indicator badge |
+| `assets/infographic/decorations/target-ring.svg` | VectorCraft contributors | Original geometric SVG authored for VectorCraft infographic pack | MIT OR Apache-2.0 | Concentric target ring icon |
+| `assets/infographic/decorations/accent-dots.svg` | VectorCraft contributors | Original geometric SVG authored for VectorCraft infographic pack | MIT OR Apache-2.0 | 4x3 dot matrix decorative accent |
+| `assets/infographic/decorations/callout-ribbon.svg` | VectorCraft contributors | Original geometric SVG authored for VectorCraft infographic pack | MIT OR Apache-2.0 | Two-tone callout banner ribbon |
+| `assets/infographic/decorations/spark-star.svg` | VectorCraft contributors | Original geometric SVG authored for VectorCraft infographic pack | MIT OR Apache-2.0 | Four-point geometric spark accent |
+| `docs/vector/bahan.jpg` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for infographic layouts |
+| `docs/vector/bahan2.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan2_svg assets |
+| `docs/vector/bahan3.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan3_svg assets |
+| `docs/vector/bahan4.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan4_svg assets |
+| `docs/vector/bahan5.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan5_svg assets |
+| `docs/vector/bahan6.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan6_svg assets |
+| `docs/vector/bahan7.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan7_svg assets |
+| `docs/vector/bahan8.png` | VectorCraft contributors | Local infographic reference & vector object pack (`docs/vector`) | MIT OR Apache-2.0 | Reference image for bahan8_svg assets |
+| `docs/vector/green-blue-decline-chart.svg` | VectorCraft contributors | Local infographic chart preset reference (`docs/vector`) | MIT OR Apache-2.0 | Green-blue decline chart reference SVG |
+| `docs/vector/isometric-blue-growth-chart.svg` | VectorCraft contributors | Local infographic chart preset reference (`docs/vector`) | MIT OR Apache-2.0 | Isometric blue growth chart reference SVG |
+| `docs/vector/isometric-orange-rising-arrows-chart.svg` | VectorCraft contributors | Local infographic chart preset reference (`docs/vector`) | MIT OR Apache-2.0 | Isometric orange rising arrows chart reference SVG |
+| `docs/vector/stepped-ribbon-upward-arrow-chart.svg` | VectorCraft contributors | Local infographic chart preset reference (`docs/vector`) | MIT OR Apache-2.0 | Stepped ribbon upward arrow chart reference SVG |
+| `docs/vector/bahan2_svg/chart-donut-belanja.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Donut chart vector object |
+| `docs/vector/bahan2_svg/chart-gauge-pendidikan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Gauge chart vector object |
+| `docs/vector/bahan2_svg/chart-pns-gender.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Gender proportion chart vector object |
+| `docs/vector/bahan2_svg/diagram-hierarki-wilayah.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Regional hierarchy diagram SVG |
+| `docs/vector/bahan2_svg/ikon-dompet-uang.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Wallet icon vector object |
+| `docs/vector/bahan2_svg/ikon-koin-emas.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Gold coins icon vector object |
+| `docs/vector/bahan2_svg/ikon-timbangan-neraca.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Balance scale icon vector object |
+| `docs/vector/bahan2_svg/ilustrasi-buku-wisuda.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Education book & cap illustration |
+| `docs/vector/bahan2_svg/ornamen-geometris-kanan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan2_svg`) | MIT OR Apache-2.0 | Geometric corner ornament |
+| `docs/vector/bahan3_svg/chart-bar-kecamatan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan3_svg`) | MIT OR Apache-2.0 | District bar chart vector object |
+| `docs/vector/bahan3_svg/chart-pie-luas-wilayah.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan3_svg`) | MIT OR Apache-2.0 | Area pie chart vector object |
+| `docs/vector/bahan3_svg/ikon-lingkaran-desa.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan3_svg`) | MIT OR Apache-2.0 | Village circle badge icon |
+| `docs/vector/bahan3_svg/ikon-termometer-suhu.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan3_svg`) | MIT OR Apache-2.0 | Thermometer icon vector object |
+| `docs/vector/bahan3_svg/ikon-tetes-hujan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan3_svg`) | MIT OR Apache-2.0 | Raindrop icon vector object |
+| `docs/vector/bahan4_svg/ikon-bank-pemerintah.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Bank building icon vector object |
+| `docs/vector/bahan4_svg/ikon-bpr-koin.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Microfinance coin icon vector object |
+| `docs/vector/bahan4_svg/ikon-kud-roda-gigi.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Cooperative gear icon vector object |
+| `docs/vector/bahan4_svg/ikon-pasar-tradisional.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Traditional market icon vector object |
+| `docs/vector/bahan4_svg/ikon-rak-minimarket.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Retail shelf icon vector object |
+| `docs/vector/bahan4_svg/ikon-restoran-piring.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Restaurant plate icon vector object |
+| `docs/vector/bahan4_svg/ikon-rumah-kecil.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan4_svg`) | MIT OR Apache-2.0 | Small house icon vector object |
+| `docs/vector/bahan5_svg/ikon-ekspedisi-swasta.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan5_svg`) | MIT OR Apache-2.0 | Private courier icon vector object |
+| `docs/vector/bahan5_svg/ikon-layanan-pos.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan5_svg`) | MIT OR Apache-2.0 | Postal service icon vector object |
+| `docs/vector/bahan5_svg/ikon-nihil-penginapan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan5_svg`) | MIT OR Apache-2.0 | No lodging icon vector object |
+| `docs/vector/bahan5_svg/objek-gedung-hotel.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan5_svg`) | MIT OR Apache-2.0 | Hotel building vector object |
+| `docs/vector/bahan5_svg/objek-jaringan-transportasi.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan5_svg`) | MIT OR Apache-2.0 | Transport network vector object |
+| `docs/vector/bahan6_svg/ikon-aksesibilitas-lingkaran.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Accessibility ring icon vector object |
+| `docs/vector/bahan6_svg/ikon-kubus-apotek.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Pharmacy cube icon vector object |
+| `docs/vector/bahan6_svg/ikon-kubus-puskesmas.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Clinic cube icon vector object |
+| `docs/vector/bahan6_svg/ikon-kubus-rumah-sakit.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Hospital cube icon vector object |
+| `docs/vector/bahan6_svg/ikon-menara-listrik.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Power tower icon vector object |
+| `docs/vector/bahan6_svg/ikon-peringatan-segitiga.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Warning triangle icon vector object |
+| `docs/vector/bahan6_svg/ikon-rompi-keselamatan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Safety vest icon vector object |
+| `docs/vector/bahan6_svg/ikon-sirine-peringatan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Warning siren icon vector object |
+| `docs/vector/bahan6_svg/ikon-tabung-gas.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan6_svg`) | MIT OR Apache-2.0 | Gas cylinder icon vector object |
+| `docs/vector/bahan7_svg/bingkai-geometris-bps.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan7_svg`) | MIT OR Apache-2.0 | Geometric frame vector object |
+| `docs/vector/bahan7_svg/ilustrasi-biofarma-jahe.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan7_svg`) | MIT OR Apache-2.0 | Ginger plant illustration SVG |
+| `docs/vector/bahan7_svg/ilustrasi-sayuran-chart.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan7_svg`) | MIT OR Apache-2.0 | Vegetables chart illustration SVG |
+| `docs/vector/bahan7_svg/ilustrasi-tanaman-hias.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan7_svg`) | MIT OR Apache-2.0 | Ornamental plant illustration SVG |
+| `docs/vector/bahan8_svg/chart-tabel-perbandingan.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan8_svg`) | MIT OR Apache-2.0 | Comparison table chart SVG |
+| `docs/vector/bahan8_svg/chart-timeline-jarak.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan8_svg`) | MIT OR Apache-2.0 | Distance timeline chart SVG |
+| `docs/vector/bahan8_svg/chart-treemap-luas-wilayah.svg` | VectorCraft contributors | Local infographic vector object pack (`docs/vector/bahan8_svg`) | MIT OR Apache-2.0 | Area treemap chart SVG |
