@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <title>Chart Donut Belanja</title>
+  <g id="donut-ring" fill="none" stroke-width="28" stroke-linecap="butt">
+    <path d="M 102.72 22.05 A 78 78 0 1 1 46.8 157.05" stroke="#f79d5e"/>
+    <path d="M 43.89 154.18 A 78 78 0 0 1 42.95 46.8" stroke="#56a1da"/>
+    <path d="M 45.82 43.89 A 78 78 0 0 1 98.64 22.01" stroke="#6c8697"/>
+  </g>
+  <g id="mini-bars">
+    <rect x="62" y="101" width="20" height="36" rx="2" fill="#56a1da"/>
+    <rect x="90" y="87" width="20" height="50" rx="2" fill="#6c8697"/>
+    <rect x="118" y="67" width="20" height="70" rx="2" fill="#f79d5e"/>
+  </g>
+</svg>

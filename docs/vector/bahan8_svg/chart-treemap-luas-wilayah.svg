@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="872" height="718" viewBox="0 0 872 718">
+  <title>Chart Treemap Distribusi Luas Wilayah</title>
+  <g id="treemap-blocks">
+    <!-- Top Left & Center-Left -->
+    <rect x="0" y="0" width="291" height="222" fill="#2b4c75"/>
+    <rect x="294" y="0" width="170" height="222" fill="#8a9aaa"/>
+    <rect x="467" y="0" width="86" height="118" fill="#7a7a7a"/>
+    <rect x="467" y="121" width="86" height="101" fill="#e2c47c"/>
+    <!-- Middle Left (Largest) -->
+    <rect x="0" y="225" width="553" height="305" fill="#ba4c27"/>
+    <!-- Bottom Left -->
+    <rect x="0" y="533" width="328" height="185" fill="#4f4a50"/>
+    <rect x="331" y="533" width="127" height="91" fill="#84998a"/>
+    <rect x="331" y="627" width="127" height="91" fill="#e0c37d"/>
+    <rect x="461" y="533" width="92" height="185" fill="#8594a9"/>
+    <!-- Right Column -->
+    <rect x="556" y="0" width="168" height="138" fill="#646466"/>
+    <rect x="727" y="0" width="145" height="138" fill="#d9b255"/>
+    <rect x="556" y="141" width="168" height="211" fill="#566f8e"/>
+    <rect x="727" y="141" width="145" height="171" fill="#8996a9"/>
+    <rect x="556" y="355" width="168" height="156" fill="#406c4b"/>
+    <rect x="727" y="315" width="67" height="196" fill="#859a89"/>
+    <rect x="797" y="315" width="75" height="196" fill="#e1c37b"/>
+  </g>
+</svg>

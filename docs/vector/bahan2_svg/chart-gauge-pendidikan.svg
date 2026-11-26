@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="230" height="130" viewBox="0 0 230 130">
+  <title>Chart Gauge Pendidikan</title>
+  <g id="gauge-arc" fill="none" stroke-width="34" stroke-linecap="butt">
+    <path d="M 22 120 A 93 93 0 0 1 152.83 35.04" stroke="#e77d4d"/>
+    <path d="M 152.83 35.04 A 93 93 0 0 1 189.27 64.03" stroke="#4ab2bb"/>
+    <path d="M 189.27 64.03 A 93 93 0 0 1 208 120" stroke="#d8dce5"/>
+  </g>
+  <g id="graduation-cap" fill="#1a344f">
+    <!-- Mortarboard top -->
+    <polygon points="115,65 152,81 115,97 78,81"/>
+    <!-- Cap crown -->
+    <path d="M 91 91 L 115 101 L 139 91 L 139 108 Q 115 120 91 108 Z"/>
+    <!-- Tassel cord & drop -->
+    <rect x="82.5" y="83" width="3" height="23"/>
+    <polygon points="84,104 80,115 88,115"/>
+  </g>
+</svg>

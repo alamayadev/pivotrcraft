@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="110" viewBox="0 0 300 110">
+  <title>Chart Bar Kecamatan</title>
+  <g id="bars">
+    <rect x="34" y="12" width="52" height="86" fill="#295481"/>
+    <rect x="124" y="17" width="52" height="81" fill="#648896"/>
+    <rect x="214" y="36" width="52" height="62" fill="#86a897"/>
+  </g>
+  <line id="baseline" x1="12" y1="98" x2="288" y2="98" stroke="#333333" stroke-width="2"/>
+</svg>

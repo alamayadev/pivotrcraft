@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="756.856" height="530.324" viewBox="0 0 1009 707">
+  <title>Isometric Blue Growth Chart</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <!-- Bar 1 (Short, Left) -->
+    <g id="bar-1">
+      <polygon points="154,443 225,491 154,539 82,491" fill="#7e97b6"/>
+      <polygon points="82,491 154,539 154,609 82,561" fill="#5c7aa1"/>
+      <polygon points="154,539 225,491 225,561 154,609" fill="#345580"/>
+    </g>
+
+    <!-- Bar 2 (Medium, Center) -->
+    <g id="bar-2">
+      <polygon points="296,394 367,442 296,490 225,442" fill="#7e97b6"/>
+      <polygon points="225,442 296,490 296,609 225,561" fill="#5c7aa1"/>
+      <polygon points="296,490 367,442 367,561 296,609" fill="#345580"/>
+    </g>
+
+    <!-- Bar 3 (Tall, Right) -->
+    <g id="bar-3">
+      <polygon points="439,330 510,378 439,426 367,378" fill="#7e97b6"/>
+      <polygon points="367,378 439,426 439,609 367,561" fill="#5c7aa1"/>
+      <polygon points="439,426 510,378 510,561 439,609" fill="#345580"/>
+    </g>
+
+    <!-- Rising Zigzag Arrow -->
+    <g id="growth-arrow">
+      <polyline points="92,424 229,297 299,344 456,201" fill="none" stroke="#365580" stroke-width="25" stroke-linecap="butt" stroke-linejoin="miter"/>
+      <polygon points="509,156 416,172 480,244" fill="#365580"/>
+    </g>
+  </g>
+</svg>

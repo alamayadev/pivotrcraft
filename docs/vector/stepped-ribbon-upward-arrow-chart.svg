@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="756.856" height="567.079" viewBox="0 0 1009 756">
+  <title>Stepped Ribbon Upward Arrow Chart</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <!-- Row 4 (Bottom Ribbon): 4 segments + upward fold -->
+    <g id="row-4-bottom">
+      <rect x="24" y="666" width="194" height="54" fill="#e58765"/>
+      <rect x="218" y="666" width="192" height="54" fill="#aa8282"/>
+      <rect x="410" y="666" width="193" height="54" fill="#607d9b"/>
+      <polygon points="603,666 796,666 820,642 820,623 873,570 873,643 796,720 603,720" fill="#335d8f"/>
+    </g>
+
+    <!-- Row 3 Ribbon: 3 segments + upward fold -->
+    <g id="row-3">
+      <rect x="218" y="593" width="192" height="54" fill="#e58765"/>
+      <rect x="410" y="593" width="193" height="54" fill="#aa8282"/>
+      <polygon points="603,593 796,593 820,569 820,550 873,497 873,570 820,623 796,647 603,647" fill="#607d9b"/>
+    </g>
+
+    <!-- Row 2 Ribbon: 2 segments + upward fold -->
+    <g id="row-2">
+      <rect x="410" y="519" width="193" height="53" fill="#e58765"/>
+      <polygon points="603,519 796,519 820,495 820,476 873,423 873,497 820,550 796,572 603,572" fill="#9e8082"/>
+    </g>
+
+    <!-- Row 1 (Top Ribbon) + Arrowhead -->
+    <g id="row-1-top-and-arrow">
+      <polygon points="603,444 820,444 820,379 766,379 846,246 873,291 873,423 820,476 796,499 603,499" fill="#c88678"/>
+      <!-- Arrowhead right shaded wing -->
+      <polygon points="873,291 926,379 873,379" fill="#958794"/>
+    </g>
+  </g>
+</svg>

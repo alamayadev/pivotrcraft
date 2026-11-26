@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="350" viewBox="0 0 260 350">
+  <title>Ikon Tetes Hujan</title>
+  <g id="raindrop">
+    <path d="M 122 14 C 122 14 20 142 20 226 A 102 102 0 1 0 224 226 C 224 142 122 14 122 14 Z" fill="#255583"/>
+    <path d="M 48 258 A 78 78 0 0 0 102 304" fill="none" stroke="#84a4b3" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g id="rain-streaks">
+    <rect x="160" y="34" width="10" height="44" rx="5" fill="#6f8796"/>
+    <circle cx="165" cy="94" r="5" fill="#6f8796"/>
+    <rect x="184" y="18" width="10" height="114" rx="5" fill="#89a6b5"/>
+    <rect x="208" y="42" width="10" height="106" rx="5" fill="#b4d2e7"/>
+    <rect x="232" y="18" width="10" height="36" rx="5" fill="#b4d2e7"/>
+    <circle cx="237" cy="70" r="5" fill="#b4d2e7"/>
+  </g>
+</svg>

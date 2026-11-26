@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="340" viewBox="0 0 140 340">
+  <title>Ikon Termometer Suhu</title>
+  <defs>
+    <linearGradient id="mercury-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#feb624"/>
+      <stop offset="48%" stop-color="#f6cc68"/>
+      <stop offset="68%" stop-color="#9dcedf"/>
+      <stop offset="100%" stop-color="#4a759f"/>
+    </linearGradient>
+  </defs>
+  <g id="thermometer-body">
+    <path d="M 32 38 A 20 20 0 0 1 72 38 L 72 248 A 38 38 0 1 1 32 248 Z" fill="#f7fff9" stroke="#7a8d99" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M 42 40 A 10 10 0 0 1 62 40 L 62 254 A 27 27 0 1 1 42 254 Z" fill="url(#mercury-grad)"/>
+  </g>
+  <g id="scale-ticks">
+    <rect x="98" y="40" width="26" height="5" rx="2.5" fill="#feb624"/>
+    <rect x="98" y="61" width="15" height="5" rx="2.5" fill="#f9c33b"/>
+    <rect x="98" y="82" width="26" height="5" rx="2.5" fill="#eec755"/>
+    <rect x="98" y="103" width="15" height="5" rx="2.5" fill="#d7c677"/>
+    <rect x="98" y="124" width="26" height="5" rx="2.5" fill="#b5c49a"/>
+    <rect x="98" y="145" width="15" height="5" rx="2.5" fill="#8ec2b7"/>
+    <rect x="98" y="166" width="26" height="5" rx="2.5" fill="#69b8cb"/>
+    <rect x="98" y="187" width="15" height="5" rx="2.5" fill="#4ca5ca"/>
+    <rect x="98" y="208" width="26" height="5" rx="2.5" fill="#3f8db8"/>
+    <rect x="98" y="229" width="15" height="5" rx="2.5" fill="#3373a1"/>
+    <rect x="98" y="250" width="26" height="5" rx="2.5" fill="#295989"/>
+  </g>
+</svg>
